@@ -1,0 +1,48 @@
+# SOLUTION
+import time
+import os
+import base64
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+
+
+
+#Define a block, data structure
+class block:
+    def __init__(self, prv_hash, data, nonce=None):
+        # content of the block (e.g., transactions list)
+        self.data = data
+        
+        # block header
+        self.prv_hash = prv_hash
+        self.timestamp = str(int(time.time()))
+        if nonce:
+            self.nonce = nonce
+        else:
+            self.nonce = base64.b16encode(os.urandom(16))
+            
+        self.hash = self.find_hash()
+        
+        
+    def find_hash(self):
+        digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+        digest.update(self.prv_hash)
+        digest.update(str.encode(self.timestamp))
+        digest.update(self.nonce)
+        digest.update(self.data)
+        return base64.b16encode(digest.finalize())
+
+    
+    def find_nonce(self, difficulty):
+        prefix = b'0'*difficulty
+        while True:
+            self.nonce = os.urandom(16)
+            msg_digest = self.find_hash()
+            if msg_digest.startswith(prefix):
+                self.hash = msg_digest
+                break 
+
+                
+    def __repr__(self):
+        return "PreviousHash: {0}\nTimestamp: {1}\nNonce: {2}\nHash: {3}".format(
+            self.prv_hash, self.timestamp, base64.b16encode(self.nonce), self.hash)
