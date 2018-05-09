@@ -1,0 +1,34 @@
+## SOLUTION
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+import base64 # to produce human readable encoding of the bytes
+import matplotlib.pylab as plt
+import os
+
+n_tries = []
+
+for index in range(1, 5):
+    
+    prefix = b'0' * index
+    
+    _n_tries = 0 
+    
+    print(index,' ======= ')
+    
+    for i in range(5):
+        while True:
+
+            digest = hashes.Hash(hashes.SHA256(), backend=default_backend())
+            value = os.urandom(16)
+            digest.update(value)
+            msg_digest = digest.finalize()
+
+            _n_tries += 1
+
+            if base64.b16encode(msg_digest).startswith(prefix):
+                print(_n_tries, base64.b16encode(msg_digest))
+                break
+
+    n_tries.append(_n_tries/5)
+
